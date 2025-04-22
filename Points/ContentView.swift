@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var game = TennisGame(maxGamesPerSet: 6, maxSetsToWin: 2)
+    @State private var number = 1
     var body: some View {
         GeometryReader { geo in
             let size = geo.size
@@ -26,32 +28,91 @@ struct ContentView: View {
             
             Group {
                 if UIScreen.isPortrait {
-                    VStack(spacing: 0) {
-                        RadialGradientView(color: .redDarkXL, center: view1Center, size: halfSize) {
-                            Text("00")
-                                .font(.monospacedDigit(.system(size: 200))())
-                                .foregroundColor(.redXL)
+                    ZStack {
+                        VStack(spacing: 0) {
+                            RadialGradientView(color: .redDarkXL, center: view1Center, size: halfSize) {
+                                Text("\(game.displayPoint(for: 0))")
+                                    .font(.monospacedDigit(.system(size: 250))())
+                                    .foregroundColor(.redXL)
+                            }.onTapGesture {
+                                game.scorePoint(for: 0)
+                            }
+                            RadialGradientView(color: .blueDark, center: view2Center, size: halfSize) {
+                                Text("\(game.displayPoint(for: 1))")
+                                    .font(.monospacedDigit(.system(size: 250))())
+                                    .foregroundColor(.blue)
+                            }.onTapGesture {
+                                game.scorePoint(for: 1)
+                            }
                         }
                         
+                        TimerView()
                         
-                        RadialGradientView(color: .blueDark, center: view2Center, size: halfSize) {
-                            Text("00")
-                                .font(.monospacedDigit(.system(size: 200))())
-                                .foregroundColor(.blue)
+                        HStack {
+                            Spacer()
+                            
+                            VStack {
+                                Text("\(game.games.0)")
+                                    .font(.title)
+                                    .foregroundColor(.white)
+                                Text("\(game.games.1)")
+                                    .font(.title)
+                                    .foregroundColor(.white)
+                            }
+                            .padding()
+                            .background(Color.gray)
+                        }
+                        
+                        VStack {
+                            HStack {
+                                Spacer()
+                                Button(action: {
+                                    game.undo()
+                                }) {
+                                    Text("回撤")
+                                        .foregroundColor(.white.opacity(0.5))
+                                        .font(.title)
+                                        .padding()
+                                }
+                                .padding(.top, 40)
+                                
+                            }
+                            Spacer()
+                            
+                            NumberView()
                         }
                     }
                 } else {
-                    HStack(spacing: 0) {
-                        LinearGradientView(color: .redDarkXL, size: halfSize, isLeft: true) {
-                            Text("00")
-                                .font(.monospacedDigit(.system(size: 200))())
-                                .foregroundColor(.redXL)
+                    ZStack {
+                        HStack(spacing: 0) {
+                            LinearGradientView(color: .redDarkXL, size: halfSize, isLeft: true) {
+                                Text("\(game.displayPoint(for: 0))")
+                                    .font(.monospacedDigit(.system(size: 200))())
+                                    .foregroundColor(.redXL)
+                            }.onTapGesture {
+                                game.scorePoint(for: 0)
+                            }
+                            
+                            LinearGradientView(color: .blueDarkXL, size: halfSize, isLeft: false) {
+                                Text("\(game.displayPoint(for: 0))")
+                                    .font(.monospacedDigit(.system(size: 200))())
+                                    .foregroundColor(.blueXL)
+                            }.onTapGesture {
+                                game.scorePoint(for: 1)
+                            }
                         }
+                        TimerView()
                         
-                        LinearGradientView(color: .blueDarkXL, size: halfSize, isLeft: false) {
-                            Text("00")
-                                .font(.monospacedDigit(.system(size: 200))())
-                                .foregroundColor(.blueXL)
+                        VStack {
+                            HStack {
+                                Text("\(game.games.0) : \(game.games.1)")
+                                    .font(.title)
+                                    .foregroundColor(.white)
+                            }
+                            .padding()
+                            .background(Color.gray)
+                            Spacer()
+                            NumberView()
                         }
                     }
                 }
