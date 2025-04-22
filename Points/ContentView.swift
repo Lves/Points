@@ -158,10 +158,12 @@ struct ContentView: View {
     //MARK: - Action
     
     func leftTapped() {
+        shake()
         game.scorePoint(for: 0)
     }
     
     func rightTapped() {
+        shake()
         game.scorePoint(for: 1)
     }
 }

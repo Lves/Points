@@ -13,6 +13,7 @@ struct NumberView: View {
 
     var body: some View {
         Button(action: {
+            shake()
             number += 1
         }) {
             Text("\(number*100)")
