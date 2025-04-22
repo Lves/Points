@@ -4,12 +4,22 @@
 //
 //  Created by xingle on 2025/4/10.
 //
+/*
+ 1. 本地化
+ 2. 通用化
+ 3. 设置
+ 4. 存储
+ 5. Icon
+ */
 
 import SwiftUI
 
 struct ContentView: View {
     @StateObject private var game = TennisGame(maxGamesPerSet: 6, maxSetsToWin: 2)
+    @StateObject private var timerViewModel = TimerViewModel()
     @State private var number = 1
+    @State private var gme = 1
+    
     var body: some View {
         GeometryReader { geo in
             let size = geo.size
@@ -34,52 +44,50 @@ struct ContentView: View {
                                 Text("\(game.displayPoint(for: 0))")
                                     .font(.monospacedDigit(.system(size: 250))())
                                     .foregroundColor(.redXL)
-                            }.onTapGesture {
-                                game.scorePoint(for: 0)
-                            }
+                            }.onTapGesture(perform: leftTapped)
                             RadialGradientView(color: .blueDark, center: view2Center, size: halfSize) {
                                 Text("\(game.displayPoint(for: 1))")
                                     .font(.monospacedDigit(.system(size: 250))())
                                     .foregroundColor(.blue)
-                            }.onTapGesture {
-                                game.scorePoint(for: 1)
-                            }
+                            }.onTapGesture(perform: rightTapped)
                         }
                         
-                        TimerView()
+                        TimerView(viewModel: timerViewModel)
                         
                         HStack {
                             Spacer()
                             
-                            VStack {
-                                Text("\(game.games.0)")
-                                    .font(.title)
-                                    .foregroundColor(.white)
-                                Text("\(game.games.1)")
-                                    .font(.title)
-                                    .foregroundColor(.white)
+                            HStack {
+                                if game.sets.0 > 0 || game.sets.1 > 0 {
+                                    VStack{
+                                        Text("\(game.sets.0)")
+                                        Text("\(game.sets.1)")
+                                    }
+                                    .foregroundColor(.white.opacity(0.5))
+                                }
+                                
+                                VStack{
+                                    Text("\(game.games.0)")
+                                    Text("\(game.games.1)")
+                                }
+                                .foregroundColor(.white)
                             }
-                            .padding()
-                            .background(Color.gray)
+                            .frame(height: 80)
+                            .frame(minWidth: 60)
+                            .background(Color.gray.opacity(0.3))
+                            .cornerRadius(12, corners: [.topLeft, .bottomLeft]) // 自定义圆角
+                            .font(.title)
+                            
+                            .font(.system(size: 16, weight: .bold))
                         }
                         
                         VStack {
-                            HStack {
-                                Spacer()
-                                Button(action: {
-                                    game.undo()
-                                }) {
-                                    Text("回撤")
-                                        .foregroundColor(.white.opacity(0.5))
-                                        .font(.title)
-                                        .padding()
-                                }
-                                .padding(.top, 40)
-                                
-                            }
                             Spacer()
-                            
-                            NumberView()
+                            NumberView(number: $number)
+                        }
+                        
+                        RevertButton {
+                            game.undo()
                         }
                     }
                 } else {
@@ -89,30 +97,55 @@ struct ContentView: View {
                                 Text("\(game.displayPoint(for: 0))")
                                     .font(.monospacedDigit(.system(size: 200))())
                                     .foregroundColor(.redXL)
-                            }.onTapGesture {
-                                game.scorePoint(for: 0)
-                            }
+                            }.onTapGesture(perform: leftTapped)
                             
                             LinearGradientView(color: .blueDarkXL, size: halfSize, isLeft: false) {
-                                Text("\(game.displayPoint(for: 0))")
+                                Text("\(game.displayPoint(for: 1))")
                                     .font(.monospacedDigit(.system(size: 200))())
                                     .foregroundColor(.blueXL)
-                            }.onTapGesture {
-                                game.scorePoint(for: 1)
-                            }
+                            }.onTapGesture(perform: rightTapped)
                         }
-                        TimerView()
+                        
+                        TimerView(viewModel: timerViewModel)
                         
                         VStack {
-                            HStack {
-                                Text("\(game.games.0) : \(game.games.1)")
-                                    .font(.title)
-                                    .foregroundColor(.white)
+                           
+                            VStack {
+                                if game.sets.0 > 0 || game.sets.1 > 0 {
+                                    HStack{
+                                        Text("\(game.sets.0)")
+                                            .font(.title)
+                                        Text(" : ")
+                                            .font(.title)
+                                        Text("\(game.sets.1)")
+                                            .font(.title)
+                                    }
+                                    .foregroundColor(.white.opacity(0.5))
+                                }
+                                
+                                HStack {
+                                    Text("\(game.games.0)")
+                                        .font(.title)
+                                    Image(systemName: "figure.tennis")
+                                    Text("\(game.games.1)")
+                                        .font(.title)
+                                }
+                                .foregroundColor(.white)
+
                             }
-                            .padding()
-                            .background(Color.gray)
+                            .padding(.horizontal)
+                            .frame(minHeight: 60)
+                            .background(Color.gray.opacity(0.3))
+                            .cornerRadius(12, corners: [.bottomLeft, .bottomRight])
+                            .font(.system(size: 16, weight: .bold))
+                                                        
+                            
                             Spacer()
-                            NumberView()
+                            NumberView(number: $number)
+                        }
+                        
+                        RevertButton {
+                            game.undo()
                         }
                     }
                 }
@@ -120,6 +153,16 @@ struct ContentView: View {
         }
         .background(Color.darkXL)
         .ignoresSafeArea()
+    }
+    
+    //MARK: - Action
+    
+    func leftTapped() {
+        game.scorePoint(for: 0)
+    }
+    
+    func rightTapped() {
+        game.scorePoint(for: 1)
     }
 }
 
